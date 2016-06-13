@@ -18,7 +18,7 @@ app.get('/', function (req, res) {
 });
 
 app.get('/:id', function(req, res) {
-  strava.streams.activity({id: req.params.id, types: 'time, latlng, distance, altitude, heartrate, cadence, watts, temp', resolution: 'medium'},function(err, activity) {
+  strava.streams.activity({id: req.params.id, types: 'heartrate', resolution: 'medium'},function(err, activity) {
     if(!err) {
       res.send(activity);
       //res.render('activities');
