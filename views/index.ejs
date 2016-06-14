@@ -1,9 +1,22 @@
-<ul>
-  <% for(var i = 0; i < activities.length; i++) { %>
-    <li>
-      <a href="/<%= activities[i].id %>">
-        <%= activities[i].name %>
-      </a>
-    </li>
-  <% } %>
-</ul>
+<table>
+  <thead>
+    <tr>
+      <td><strong>Fancy Chart</strong></td>
+      <td><strong>Raw JSON</strong><br><small>(Debugging)</small></td>
+    </tr>
+  </thead>
+  <tbody>
+    <% for(var i = 0; i < activities.length; i++) { %>
+      <tr>
+        <td>
+          <a href="/<%= activities[i].id %>">
+            <%= activities[i].name %>
+          </a>
+        </td>
+        <td>
+          <a href="/raw/<%= activities[i].id %>">JSON</a>
+        </td>
+      </tr>
+    <% } %>
+  </tbody>
+</table>

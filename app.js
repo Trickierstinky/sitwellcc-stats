@@ -11,19 +11,24 @@ app.get('/', function (req, res) {
       res.render('index', {
         activities: activities
       });
-    } else {
-      console.log(err);
     }
   });
 });
 
 app.get('/:id', function(req, res) {
-  strava.streams.activity({id: req.params.id, types: 'heartrate', resolution: 'medium'},function(err, activity) {
+  strava.streams.activity({id: req.params.id, types: ['time', 'altitude', 'heartrate', 'cadence', 'watts'], resolution: 'high'},function(err, activity) {
+    if(!err) {
+      res.render('activities', {
+        activity: activity
+      });
+    }
+  });
+});
+
+app.get('/raw/:id', function(req, res) {
+  strava.streams.activity({id: req.params.id, types: ['time', 'altitude', 'heartrate', 'cadence', 'watts'], resolution: 'high'},function(err, activity) {
     if(!err) {
       res.send(activity);
-      //res.render('activities');
-    } else {
-      console.log(err);
     }
   });
 });

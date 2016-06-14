@@ -14,7 +14,8 @@
     "strava",
     "express",
     "node",
-    "api"
+    "api",
+    "charts"
   ],
   "author": "Jonny Haynes",
   "license": "MIT",
