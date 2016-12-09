@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Members</title>
+</head>
+<body>
+  <table>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Name</th>
+        <th>Rides</th>
+        <th>Distance</th>
+        <th>Elevation</th>
+        <th>Hours</th>
+        <th>Av Speed</th>
+        <th>Av Elevation</th>
+        <th>Av Distance</th>
+        <th>Biggest</th>
+        <th>Highest</th>
+        <th>Difference</th>
+        <th>% of Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for(var i = 0; i < members.length; i++) { %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><a href="https://www.strava.com/athletes/<%= members[i].id %>" target="_blank"><%= members[i].name %></a></td>
+          <td><%= members[i].rides %></td>
+          <td><%= members[i].distance %></td>
+          <td><%= members[i].elevation %></td>
+          <td><%= members[i].hours %></td>
+          <td><%= members[i].distance / members[i].hours %></td>
+          <td><%= members[i].elevation / members[i].rides %></td>
+          <td><%= members[i].distance / members[i].rides %></td>
+          <td><%= members[i].biggest %></td>
+          <td><%= members[i].highest %></td>
+          <td>Difference</td>
+          <td>% of Total</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>  
+</body>
+</html>

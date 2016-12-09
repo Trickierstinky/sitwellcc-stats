@@ -5,30 +5,31 @@ var app = express();
 
 app.set('view engine', 'ejs');
 
-app.get('/', function (req, res) {
-  strava.athlete.listActivities({id:627105},function(err, activities) {
+app.get('/', function(req, res) {
+  strava.clubs.listMembers({id:93874}, function(err, clubMembers) {
     if(!err) {
-      res.render('index', {
-        activities: activities
-      });
-    }
-  });
-});
+      const members = [];
+      clubMembers.forEach(function(member) {
+        strava.athletes.stats({id:member.id}, function(err, memberStats) {
+          //console.log(memberStats);
+          if(!err && memberStats.message == null) {
+            members.push({
+              'id': member.id, 
+              'name': `${member.firstname} ${member.lastname.charAt(0)}`, 
+              'rides': memberStats.ytd_ride_totals.count,
+              'distance': memberStats.ytd_ride_totals.distance,
+              'elevation': memberStats.ytd_ride_totals.elevation_gain,
+              'hours': memberStats.ytd_ride_totals.moving_time,
+              'biggest': memberStats.biggest_ride_distance,
+              'highest': memberStats.biggest_climb_elevation_gain
+            });
 
-app.get('/:id', function(req, res) {
-  strava.streams.activity({id: req.params.id, types: ['time', 'altitude', 'heartrate', 'cadence', 'watts'], resolution: 'high'},function(err, activity) {
-    if(!err) {
-      res.render('activities', {
-        activity: activity
+            res.render('members', {
+              members: members
+            });
+          }
+        });
       });
-    }
-  });
-});
-
-app.get('/raw/:id', function(req, res) {
-  strava.streams.activity({id: req.params.id, types: ['time', 'altitude', 'heartrate', 'cadence', 'watts'], resolution: 'high'},function(err, activity) {
-    if(!err) {
-      res.send(activity);
     }
   });
 });
