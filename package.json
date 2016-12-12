@@ -1,31 +1,11 @@
 {
-  "name": "strava",
-  "version": "0.0.1",
-  "description": "Strava experiments",
-  "main": "app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/colouringcode/strava.git"
-  },
-  "keywords": [
-    "strava",
-    "express",
-    "node",
-    "api",
-    "charts"
-  ],
-  "author": "Jonny Haynes",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/colouringcode/strava/issues"
-  },
+  "name": "passport-strava-examples-login",
+  "version": "0.0.0",
   "dependencies": {
-    "ejs": "^2.4.2",
-    "express": "^4.13.4",
-    "nodemon": "^1.9.2",
+    "express": "2.x.x",
+    "ejs": ">= 0.0.0",
+    "passport": ">= 0.0.0",
+    "passport-strava-oauth2": ">= 0.1.1",
     "strava-v3": "^1.12.0"
   }
 }
