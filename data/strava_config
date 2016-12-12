@@ -1,6 +1,6 @@
 
 {
-    "access_token"    :"1a5baf6fcef51f291520728b866f6d3a3042d0e9"
-    , "client_id"     :"11500"
-    , "client_secret" :"0ca2010a57ae2ec5d77c1486e151b4571d00dd7e"
+    "access_token"    : process.env.STRAVA_ACCESS_TOKEN
+    , "client_id"     : process.env.STRAVA_CLIENT_ID
+    , "client_secret" : process.env.STRAVA_CLIENT_SECRET
 }

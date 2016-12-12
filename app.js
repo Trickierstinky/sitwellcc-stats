@@ -1,11 +1,15 @@
-var express = require('express')
+const express = require('express')
+  , cookieParser = require('cookie-parser')
+  , bodyParser = require('body-parser')
+  , methodOverride = require('method-override')
+  , session = require('express-session')
+  , serveStatic = require('serve-static')
+  , expressLayouts = require('express-ejs-layouts')
   , passport = require('passport')
   , util = require('util')
   , StravaStrategy = require('passport-strava-oauth2').Strategy
-  , strava = require('strava-v3');
-
-var STRAVA_CLIENT_ID = '11500'; //process.env.STRAVA_CLIENT_ID
-var STRAVA_CLIENT_SECRET = '0ca2010a57ae2ec5d77c1486e151b4571d00dd7e'; //process.env.STRAVA_CLIENT_SECRET
+  , strava = require('strava-v3')
+  , dotenv = require('dotenv').config();
 
 
 // Passport session setup.
@@ -29,12 +33,14 @@ passport.deserializeUser(function(obj, done) {
 //   credentials (in this case, an accessToken, refreshToken, and Strava
 //   profile), and invoke a callback with a user object.
 passport.use(new StravaStrategy({
-    clientID: STRAVA_CLIENT_ID,
-    clientSecret: STRAVA_CLIENT_SECRET,
-    callbackURL: "http://127.0.0.1:3000/auth/strava/callback"
+    clientID: process.env.STRAVA_CLIENT_ID,
+    clientSecret: process.env.STRAVA_CLIENT_SECRET,
+    callbackURL: process.env.STRAVA_CALLBACK_URL
   },
   function(accessToken, refreshToken, profile, done) {
-    // asynchronous verification, for effect...
+    
+    console.log(accessToken);
+
     process.nextTick(function () {
       
       // To keep the example simple, the user's Strava profile is returned to
@@ -46,28 +52,22 @@ passport.use(new StravaStrategy({
   }
 ));
 
-
-
-
-var app = express.createServer();
+const app = express();
 
 // configure Express
-app.configure(function() {
-  app.set('views', __dirname + '/views');
-  app.set('view engine', 'ejs');
-  app.use(express.logger());
-  app.use(express.cookieParser());
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(express.session({ secret: 'keyboard cat' }));
-  // Initialize Passport!  Also use passport.session() middleware, to support
-  // persistent login sessions (recommended).
-  app.use(passport.initialize());
-  app.use(passport.session());
-  app.use(app.router);
-  app.use(express.static(__dirname + '/public'));
-});
+app.set('view engine', 'ejs');
+app.set('layout', 'layouts/application');
+app.use(expressLayouts);
 
+app.use(cookieParser());
+app.use(bodyParser());
+app.use(methodOverride());
+app.use(session({ secret: 'keyboard cat' }));
+// Initialize Passport!  Also use passport.session() middleware, to support
+// persistent login sessions (recommended).
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(serveStatic(__dirname + '/public'));
 
 app.get('/', function(req, res){
   res.render('index', { user: req.user });
@@ -140,8 +140,11 @@ app.get('/logout', function(req, res){
   res.redirect('/');
 });
 
-app.listen(3000);
+app.set('port', process.env.PORT || 5000);
 
+app.listen(app.get('port'), function() {
+  console.info('Express app started on ' + app.get('port'));
+});
 
 // Simple route middleware to ensure user is authenticated.
 //   Use this route middleware on any resource that needs to be protected.  If
