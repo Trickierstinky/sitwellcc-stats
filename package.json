@@ -1,0 +1,18 @@
+{
+  "name": "Sitwell CC Strava Stats",
+  "version": "1.0.0",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "cookie-parser": "^1.4.3",
+    "dotenv": "^2.0.0",
+    "ejs": ">= 0.0.0",
+    "express": "~4.13.3",
+    "express-ejs-layouts": "^2.1.0",
+    "express-session": "^1.14.2",
+    "method-override": "^2.3.7",
+    "passport": ">= 0.0.0",
+    "passport-strava-oauth2": ">= 0.1.1",
+    "request": "^2.79.0",
+    "serve-static": "^1.11.1"
+  }
+}
