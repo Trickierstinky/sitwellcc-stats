@@ -1,5 +1,5 @@
 {
-  "name": "Sitwell CC Strava Stats",
+  "name": "SCCStravaStats",
   "version": "1.0.0",
   "dependencies": {
     "body-parser": "^1.15.2",
@@ -13,6 +13,7 @@
     "passport": ">= 0.0.0",
     "passport-strava-oauth2": ">= 0.1.1",
     "request": "^2.79.0",
-    "serve-static": "^1.11.1"
+    "serve-static": "^1.11.1",
+    "sqlite3": "^3.1.8"
   }
 }
