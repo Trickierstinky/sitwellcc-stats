@@ -12,13 +12,11 @@ const express = require('express')
     , dotenv = require('dotenv').config()
     , sqlite3 = require('sqlite3').verbose();
 
-var db = new sqlite3.Database('sitwellccstats.db');
-
-passport.serializeUser(function(user, done) {
+passport.serializeUser((user, done) => {
   done(null, user);
 });
 
-passport.deserializeUser(function(obj, done) {
+passport.deserializeUser((obj, done) => {
   done(null, obj);
 });
 
@@ -27,7 +25,7 @@ passport.use(new StravaStrategy({
     clientSecret: process.env.STRAVA_CLIENT_SECRET,
     callbackURL: process.env.STRAVA_CALLBACK_URL
   },
-  function(accessToken, refreshToken, profile, done) {
+  (accessToken, refreshToken, profile, done) => {
 
     process.nextTick(function () {
 
@@ -42,7 +40,7 @@ passport.use(new StravaStrategy({
         if (!error && response.statusCode == 200) {
           const members = [];
 
-          JSON.parse(response.body).forEach(function(member) {
+          JSON.parse(response.body).forEach((member) => {
             members.push(member.id);
           });
 
@@ -52,8 +50,10 @@ passport.use(new StravaStrategy({
 
           if (members.find(profileId)) {
 
+            const db = new sqlite3.Database('sitwellccstats.db');
+
             db.serialize(function() {
-              db.run(`INSERT INTO members VALUES ('${profile.token}')`);
+              db.run(`INSERT OR IGNORE INTO members VALUES ('${profile.token}');`);
             });
 
             db.close();
@@ -83,84 +83,78 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(serveStatic(__dirname + '/public'));
 
-app.get('/', function(req, res){
+app.get('/', (req, res) => {
   res.render('index', { user: req.user });
 });
 
-app.get('/account', ensureAuthenticated, function(req, res){
+app.get('/account', ensureAuthenticated, (req, res) => {
   res.render('account', { user: req.user });
 });
 
-app.get('/login', function(req, res){
+app.get('/login', (req, res) => {
   res.render('login', { user: req.user });
 });
 
-app.get('/stats', ensureAuthenticated, function(req, res) {
+const memberStats = (req, res, next) => {
+  const memberStats = []
+      , db = new sqlite3.Database('sitwellccstats.db');
 
-  const members = []
-      , accessTokens = [];
+  db.each('SELECT accessToken FROM members', (err, row) => {
+    const options = {
+      url: 'https://www.strava.com/api/v3/athlete',
+      headers: {
+        'Authorization': `Bearer ${row.accessToken}`
+      }
+    };
 
-  db.each('SELECT * FROM members', function(err, row) {
-    console.log(row);
+    request(options, (error, response, data) => {
+      const member = JSON.parse(response.body);
+
+      memberStats.push({
+        'id': member.id, 
+        'name': `${member.firstname} ${member.lastname.charAt(0)}`
+        // 'rides': memberStats.ytd_ride_totals.count,
+        // 'distance': Math.round((memberStats.ytd_ride_totals.distance * 0.00062137) * 100) / 100, // mi = m * 0.00062137 from http://www.metric-conversions.org/length/meters-to-miles.htm
+        // 'elevation': Math.round((memberStats.ytd_ride_totals.elevation_gain * 3.2808) * 100) / 100, // ft = m * 3.2808 from http://www.metric-conversions.org/length/meters-to-feet.htm
+        // 'hours': Math.round((memberStats.ytd_ride_totals.moving_time * 0.00027778) * 100) / 100, // hr = s * 0.00027778 from http://www.metric-conversions.org/time/seconds-to-hour.htm
+        // 'avSpeed': Math.round(((memberStats.ytd_ride_totals.distance * 0.00062137) / (memberStats.ytd_ride_totals.moving_time * 0.00027778)) * 100) /100,
+        // 'biggest': Math.round(memberStats.biggest_ride_distance * 0.00062137),
+        // 'highest': Math.round(memberStats.biggest_climb_elevation_gain  * 3.2808)
+      });
+    });
   });
 
-  // stravaProfile.forEach(function(profile) {
-  //   // console.log(profile);
+  db.close();
 
-  //   const options = {
-  //     url: 'https://www.strava.com/api/v3/athlete',
-  //     headers: {
-  //       'Authorization': `Bearer ${profile.token}`
-  //     }
-  //   };
+  req.memberStats = memberStats;
+  next();
+};
 
-  //   request(options, (error, response, data) => {    
-  //     if (!error && response.statusCode == 200) {
-  //       //console.log(response);
+app.get('/stats', ensureAuthenticated, memberStats);
+app.get('/stats', ensureAuthenticated, (req, res) => {
 
-  //       const member = JSON.parse(response.body);
-
-  //       console.log(member.id);
-
-  //       members.push({
-  //         'id': member.id, 
-  //         'name': `${member.firstname} ${member.lastname.charAt(0)}`
-  //         // 'rides': memberStats.ytd_ride_totals.count,
-  //         // 'distance': Math.round((memberStats.ytd_ride_totals.distance * 0.00062137) * 100) / 100, // mi = m * 0.00062137 from http://www.metric-conversions.org/length/meters-to-miles.htm
-  //         // 'elevation': Math.round((memberStats.ytd_ride_totals.elevation_gain * 3.2808) * 100) / 100, // ft = m * 3.2808 from http://www.metric-conversions.org/length/meters-to-feet.htm
-  //         // 'hours': Math.round((memberStats.ytd_ride_totals.moving_time * 0.00027778) * 100) / 100, // hr = s * 0.00027778 from http://www.metric-conversions.org/time/seconds-to-hour.htm
-  //         // 'avSpeed': Math.round(((memberStats.ytd_ride_totals.distance * 0.00062137) / (memberStats.ytd_ride_totals.moving_time * 0.00027778)) * 100) /100,
-  //         // 'biggest': Math.round(memberStats.biggest_ride_distance * 0.00062137),
-  //         // 'highest': Math.round(memberStats.biggest_climb_elevation_gain  * 3.2808)
-  //       });
-
-  //       // res.render('stats', {
-  //       //   user: req.user,
-  //       //   members: members
-  //       // });
-  //     }
-  //   });
-  // });
-
-  // curl -G https://www.strava.com/api/v3/athlete -H "Authorization: Bearer c3e0665cae3ce31a0544e57b4026981e990314b7"
+  res.render('stats', {
+    user: req.user,
+    members: req.memberStats
+  });
 });
 
-app.get('/auth/strava', passport.authenticate('strava', { scope: ['public'] }), function(req, res) {
+app.get('/auth/strava', passport.authenticate('strava', { scope: ['public'] }), (req, res) => {
 
 });
 
-app.get('/auth/strava/callback', passport.authenticate('strava', { failureRedirect: '/login' }), function(req, res) {
+app.get('/auth/strava/callback', passport.authenticate('strava', { failureRedirect: '/login' }), (req, res) => {
   res.redirect('/');
 });
 
-app.get('/logout', function(req, res){
+app.get('/logout', (req, res) => {
   req.logout();
   res.redirect('/');
 });
 
 app.set('port', process.env.PORT || 5000);
 
-app.listen(app.get('port'), function() {
+app.listen(app.get('port'), () => {
   console.info('Express app started on ' + app.get('port'));
 });
 
