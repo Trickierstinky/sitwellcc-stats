@@ -10,7 +10,8 @@ const express = require('express')
     , StravaStrategy = require('passport-strava-oauth2').Strategy
     , request = require('request')
     , dotenv = require('dotenv').config()
-    , sqlite3 = require('sqlite3').verbose();
+    , sqlite3 = require('sqlite3').verbose()
+    , async = require('async');
 
 passport.serializeUser((user, done) => {
   done(null, user);
@@ -36,7 +37,7 @@ passport.use(new StravaStrategy({
         }
       };
 
-      request(options, (error, response, data) => {    
+      request(options, (error, response, data) => {
         if (!error && response.statusCode == 200) {
           const members = [];
 
@@ -63,7 +64,7 @@ passport.use(new StravaStrategy({
         } else {
           res.render('index');
         }
-      });      
+      });
     });
   }
 ));
@@ -96,38 +97,19 @@ app.get('/login', (req, res) => {
 });
 
 const memberStats = (req, res, next) => {
-  const memberStats = []
-      , db = new sqlite3.Database('sitwellccstats.db');
+  const memberStats = [],
+        db = new sqlite3.Database('sitwellccstats.db');
 
-  db.each('SELECT accessToken FROM members', (err, row) => {
-    const options = {
-      url: 'https://www.strava.com/api/v3/athlete',
-      headers: {
-        'Authorization': `Bearer ${row.accessToken}`
-      }
-    };
 
-    request(options, (error, response, data) => {
-      const member = JSON.parse(response.body);
-
-      memberStats.push({
-        'id': member.id, 
-        'name': `${member.firstname} ${member.lastname.charAt(0)}`
-        // 'rides': memberStats.ytd_ride_totals.count,
-        // 'distance': Math.round((memberStats.ytd_ride_totals.distance * 0.00062137) * 100) / 100, // mi = m * 0.00062137 from http://www.metric-conversions.org/length/meters-to-miles.htm
-        // 'elevation': Math.round((memberStats.ytd_ride_totals.elevation_gain * 3.2808) * 100) / 100, // ft = m * 3.2808 from http://www.metric-conversions.org/length/meters-to-feet.htm
-        // 'hours': Math.round((memberStats.ytd_ride_totals.moving_time * 0.00027778) * 100) / 100, // hr = s * 0.00027778 from http://www.metric-conversions.org/time/seconds-to-hour.htm
-        // 'avSpeed': Math.round(((memberStats.ytd_ride_totals.distance * 0.00062137) / (memberStats.ytd_ride_totals.moving_time * 0.00027778)) * 100) /100,
-        // 'biggest': Math.round(memberStats.biggest_ride_distance * 0.00062137),
-        // 'highest': Math.round(memberStats.biggest_climb_elevation_gain  * 3.2808)
+  db.all('SELECT accessToken FROM members', (err, rows) => {
+    fetchData(rows, (memberStats) =>{
+      db.close(() => {
+        req.memberStats = memberStats
+        next();
       });
     });
   });
 
-  db.close();
-
-  req.memberStats = memberStats;
-  next();
 };
 
 app.get('/stats', ensureAuthenticated, memberStats);
@@ -161,4 +143,44 @@ app.listen(app.get('port'), () => {
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
   res.redirect('/login')
+}
+
+function httpGet(token, callback){
+  const options = {
+      url: 'https://www.strava.com/api/v3/athlete',
+      headers: {
+        'Authorization': `Bearer ${token.accessToken}`
+      }
+    };
+
+    request(options, (err, response, data) => {
+      const member = JSON.parse(response.body);
+      callback(err, {
+        'id': member.id,
+        'name': `${member.firstname} ${member.lastname.charAt(0)}`
+        // 'rides': memberStats.ytd_ride_totals.count,
+        // 'distance': Math.round((memberStats.ytd_ride_totals.distance * 0.00062137) * 100) / 100, // mi = m * 0.00062137 from http://www.metric-conversions.org/length/meters-to-miles.htm
+        // 'elevation': Math.round((memberStats.ytd_ride_totals.elevation_gain * 3.2808) * 100) / 100, // ft = m * 3.2808 from http://www.metric-conversions.org/length/meters-to-feet.htm
+        // 'hours': Math.round((memberStats.ytd_ride_totals.moving_time * 0.00027778) * 100) / 100, // hr = s * 0.00027778 from http://www.metric-conversions.org/time/seconds-to-hour.htm
+        // 'avSpeed': Math.round(((memberStats.ytd_ride_totals.distance * 0.00062137) / (memberStats.ytd_ride_totals.moving_time * 0.00027778)) * 100) /100,
+        // 'biggest': Math.round(memberStats.biggest_ride_distance * 0.00062137),
+        // 'highest': Math.round(memberStats.biggest_climb_elevation_gain  * 3.2808)
+      })
+    });
+}
+
+
+function fetchData(tokens, callback) {
+  var count = 0;
+
+  async.map(tokens, httpGet, (err, res) =>{
+    if (err) return console.log(err);
+    console.log(res);
+    if (callback && typeof(callback) === "function") {
+      callback(res);
+    }
+    else {
+      return res;
+    }
+  });
 }

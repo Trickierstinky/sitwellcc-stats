@@ -15,5 +15,9 @@
     "request": "^2.79.0",
     "serve-static": "^1.11.1",
     "sqlite3": "^3.1.8"
+  },
+  "devDependencies": {
+    "async": "^2.1.4",
+    "nodemon": "^1.11.0"
   }
 }
