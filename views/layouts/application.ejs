@@ -2,21 +2,89 @@
 <html>
 	<head>
 		<title>Strava Stats - Sitwell Cycling Club</title>
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700,600|Open+Sans+Condensed:700" rel="stylesheet">
+		<style>
+			* { margin: 0; padding: 0; }
+			html { overflow-x: hidden; overflow-y: scroll; min-height: 100%; text-size-adjust: 100%; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; color: #212121; background-color: #fff; box-sizing: border-box; }
+			body { font-family: "Open Sans",sans-serif; font-size: 1rem; padding: 0 20px; }
+			.wrap { margin: 0 auto; }
+			h1 { font-size: 2.25rem }
+			h2 { font-size: 1.875rem }
+			h3 { font-size: 1.5rem }
+			h4 { font-size: 1.125rem }
+			h5 { font-size: 1.125rem }
+			h6 { font-size: 1rem }
+			h1,h2,h3,h4,h5,h6 { margin-bottom: 10px; font-family: "Open Sans Condensed",sans-serif; line-height: 1 }
+			p { margin-bottom: 20px }
+			li, p { line-height: 1.4 }
+			ul+h2,
+			ul+h3,
+			ol+h2,
+			ol+h3,
+			p+h2,
+			p+h3 { margin-top: 30px }
+			.intro { font-size: 1.25rem }
+			strong,b { font-weight: bold }
+			small { font-size: 75% }
+			em,i,cite { font-style: italic }
+			sub,sup { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline }
+			sup { top: -0.5em }
+			sub { bottom: -0.25em }
+			del { text-decoration: line-through }
+			mark { background: #fdc300 }
+			abbr[title],
+			dfn[title] { border-bottom: 1px dotted; cursor: help }
+			address { margin-bottom: 20px }
+			a { color: #00803d; text-decoration: none }
+			a:hover,
+			a:active,
+			a:focus { color: #00803d; text-decoration: underline }
+			header{ padding-top: 20px; padding-bottom: 20px; }
+			header p {  margin-bottom: 0; }
+			main { padding-bottom: 20px; }
+			.table-wrapper {overflow-x: auto; display: block; width: 100%; }
+			table { margin-bottom: 25px; width: 100%; border: 1px solid #eee; border-collapse: collapse; border-spacing: 0; min-width: 1000px; }
+			tbody tr:nth-of-type(1),
+			tbody tr:nth-of-type(1) th,
+			tbody tr:nth-of-type(1) td { background-color: rgba(212,175,55,0.25); }
+			tbody tr:nth-of-type(2),
+			tbody tr:nth-of-type(2) th,
+			tbody tr:nth-of-type(2) td { background-color: rgba(192,192,192,0.25); }
+			tbody tr:nth-of-type(3),
+			tbody tr:nth-of-type(3) th,
+			tbody tr:nth-of-type(3) td { background-color: rgba(205,127,50,0.1875); }
+			tbody tr:nth-of-type(5n),
+			tbody tr:nth-of-type(5n) th,
+			tbody tr:nth-of-type(5n) td { border-bottom-color: #ccc; }
+			tr, td { border: 1px solid #eee; }
+			th, td { padding: 10px; text-align: left; font-family: "Open Sans",sans-serif; font-weight: 300; font-size: 0.8125rem; }
+			thead th { background: #212121; border: 1px solid #ccc; color: #fff; padding-top: 20px; padding-bottom: 20px; }
+			th { font-weight: bold; }
+			table img { width: 45px; display: inline-block; vertical-align: middle; margin-right: 10px; }
+			table a { font-weight: bold; }
+			img { border-radius: 100%; }
+		</style>
 	</head>
 	<body>
-		<% if (!user) { %>
-			<p>
-			<a href="/">Home</a> | 
-			<a href="/login">Log In</a>
-			</p>
-		<% } else { %>
-			<p>
-			<a href="/">Home</a> | 
-			<a href="/stats">Stats</a> | 
-			<a href="/account">Account</a> | 
-			<a href="/logout">Log Out</a>
-			</p>
-		<% } %>
-		<%- body %>
+		<header>
+			<div class="wrap">
+				<% if (!user) { %>
+					<p>
+						<a href="/">Home</a>
+					</p>
+				<% } else { %>
+					<p>
+					<a href="/">Home</a> | 
+					<a href="/stats">Stats</a> | 
+					<a href="/logout">Log Out</a>
+					</p>
+				<% } %>
+			</div>
+		</header>
+		<main>
+			<div class="wrap">
+				<%- body %>
+			</div>
+		</main>
 	</body>
 </html>

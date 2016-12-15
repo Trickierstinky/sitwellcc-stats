@@ -88,17 +88,13 @@ app.get('/', (req, res) => {
   res.render('index', { user: req.user });
 });
 
-app.get('/account', ensureAuthenticated, (req, res) => {
-  res.render('account', { user: req.user });
-});
-
 app.get('/login', (req, res) => {
   res.render('login', { user: req.user });
 });
 
 const memberStats = (req, res, next) => {
-  const memberStats = [],
-        db = new sqlite3.Database('sitwellccstats.db');
+  const memberStats = []
+      , db = new sqlite3.Database('sitwellccstats.db');
 
 
   db.all('SELECT accessToken FROM members', (err, rows) => {
@@ -115,9 +111,11 @@ const memberStats = (req, res, next) => {
 app.get('/stats', ensureAuthenticated, memberStats);
 app.get('/stats', ensureAuthenticated, (req, res) => {
 
+  var filteredStats = req.memberStats.sort(dynamicSort('distance'));
+
   res.render('stats', {
     user: req.user,
-    members: req.memberStats
+    members: filteredStats
   });
 });
 
@@ -146,27 +144,40 @@ function ensureAuthenticated(req, res, next) {
 }
 
 function httpGet(token, callback){
-  const options = {
-      url: 'https://www.strava.com/api/v3/athlete',
+  const athleteOptions = {
+    url: 'https://www.strava.com/api/v3/athlete',
+    headers: {
+      'Authorization': `Bearer ${token.accessToken}`
+    }
+  };
+
+  request(athleteOptions, (err, response, data) => {
+    const member = JSON.parse(response.body);
+
+    const athleteStatOptions = {
+      url: `https://www.strava.com/api/v3/athletes/${member.id}/stats`,
       headers: {
         'Authorization': `Bearer ${token.accessToken}`
       }
     };
 
-    request(options, (err, response, data) => {
-      const member = JSON.parse(response.body);
+    request(athleteStatOptions, (err, response, data) => {
+      const memberStats = JSON.parse(response.body);
+
       callback(err, {
+        'photo': member.profile,
         'id': member.id,
-        'name': `${member.firstname} ${member.lastname.charAt(0)}`
-        // 'rides': memberStats.ytd_ride_totals.count,
-        // 'distance': Math.round((memberStats.ytd_ride_totals.distance * 0.00062137) * 100) / 100, // mi = m * 0.00062137 from http://www.metric-conversions.org/length/meters-to-miles.htm
-        // 'elevation': Math.round((memberStats.ytd_ride_totals.elevation_gain * 3.2808) * 100) / 100, // ft = m * 3.2808 from http://www.metric-conversions.org/length/meters-to-feet.htm
-        // 'hours': Math.round((memberStats.ytd_ride_totals.moving_time * 0.00027778) * 100) / 100, // hr = s * 0.00027778 from http://www.metric-conversions.org/time/seconds-to-hour.htm
-        // 'avSpeed': Math.round(((memberStats.ytd_ride_totals.distance * 0.00062137) / (memberStats.ytd_ride_totals.moving_time * 0.00027778)) * 100) /100,
-        // 'biggest': Math.round(memberStats.biggest_ride_distance * 0.00062137),
-        // 'highest': Math.round(memberStats.biggest_climb_elevation_gain  * 3.2808)
-      })
+        'name': `${member.firstname}`,
+        'rides': memberStats.ytd_ride_totals.count,
+        'distance': Math.round((memberStats.ytd_ride_totals.distance * 0.00062137) * 100) / 100, // mi = m * 0.00062137 from http://www.metric-conversions.org/length/meters-to-miles.htm
+        'elevation': Math.round((memberStats.ytd_ride_totals.elevation_gain * 3.2808) * 100) / 100, // ft = m * 3.2808 from http://www.metric-conversions.org/length/meters-to-feet.htm
+        'hours': Math.round((memberStats.ytd_ride_totals.moving_time * 0.00027778) * 100) / 100, // hr = s * 0.00027778 from http://www.metric-conversions.org/time/seconds-to-hour.htm
+        'avSpeed': Math.round(((memberStats.ytd_ride_totals.distance * 0.00062137) / (memberStats.ytd_ride_totals.moving_time * 0.00027778)) * 100) /100,
+        'longest': Math.round(memberStats.biggest_ride_distance * 0.00062137),
+        'highest': Math.round(memberStats.biggest_climb_elevation_gain  * 3.2808)
+      });
     });
+  });
 }
 
 
@@ -175,7 +186,6 @@ function fetchData(tokens, callback) {
 
   async.map(tokens, httpGet, (err, res) =>{
     if (err) return console.log(err);
-    console.log(res);
     if (callback && typeof(callback) === "function") {
       callback(res);
     }
@@ -184,3 +194,17 @@ function fetchData(tokens, callback) {
     }
   });
 }
+
+var dynamicSort = (property) => {
+  var sortOrder = 1;
+
+  if(property[0] === "-") {
+    sortOrder = -1;
+    property = property.substr(1);
+  }
+
+  return (a,b) => {
+    var result = (a[property] > b[property]) ? -1 : (a[property] < b[property]) ? 1 : 0;
+      return result * sortOrder;
+  };
+};
