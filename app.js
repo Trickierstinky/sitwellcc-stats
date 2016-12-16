@@ -110,12 +110,13 @@ const memberStats = (req, res, next) => {
 
 app.get('/stats', ensureAuthenticated, memberStats);
 app.get('/stats', ensureAuthenticated, (req, res) => {
+  var totalClubDistance = req.memberStats.sum('distance');
 
   var filteredStats = req.memberStats.sort(dynamicSort('distance'));
-
   res.render('stats', {
     user: req.user,
-    members: filteredStats
+    members: filteredStats,
+    totalClubDistance: totalClubDistance
   });
 });
 
@@ -208,3 +209,14 @@ var dynamicSort = (property) => {
       return result * sortOrder;
   };
 };
+
+
+// Matt added 15th
+
+Array.prototype.sum = function (prop) {
+    var total = 0
+    for ( var i = 0, _len = this.length; i < _len; i++ ) {
+        total += this[i][prop]
+    }
+    return total
+}
