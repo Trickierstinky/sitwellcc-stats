@@ -41,10 +41,10 @@
           <td><%= Math.round((members[i].elevation / members[i].rides) * 100) / 100 %></td>
           <td><%= members[i].longest %></td>
           <td><%= members[i].highest %></td>
-          <td>Difference</td>
-          <td><%= members.length %></td>
+          <td><%= (i == 0) ? 'N/A' : '-'+ Math.round(members[i-1].distance - members[i].distance) %></td>
+          <td><%= Math.round((members[i].distance * 100) / totalClubDistance) + '%' %></td>
         </tr>
       <% } %>
     </tbody>
-  </table>  
+  </table>
 </div>
