@@ -3,6 +3,8 @@
 	<head>
 		<title>Strava Stats - Sitwell Cycling Club</title>
 		<link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700,600|Open+Sans+Condensed:700" rel="stylesheet">
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script src="/assets/javascripts/sorttable.js"></script>
 		<style>
 			* { margin: 0; padding: 0; }
 			html { overflow-x: hidden; overflow-y: scroll; min-height: 100%; text-size-adjust: 100%; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; color: #212121; background-color: #fff; box-sizing: border-box; }
@@ -60,9 +62,12 @@
 			th, td { padding: 10px; text-align: left; font-family: "Open Sans",sans-serif; font-weight: 300; font-size: 0.8125rem; }
 			thead th { background: #212121; border: 1px solid #ccc; color: #fff; padding-top: 20px; padding-bottom: 20px; }
 			th { font-weight: bold; }
+			tfoot td { border-top: 2px solid #ccc; padding-top: 20px; padding-bottom: 20px; font-weight: bold; }
 			table img { width: 45px; display: inline-block; vertical-align: middle; margin-right: 10px; }
 			table a { font-weight: bold; }
 			img { border-radius: 100%; }
+			#sorttable_sortfwdind { width: 10px; height: 10px; display: inline-block; text-indent: -1000em; background-image: url(/assets/images/down.svg); background-position: 50% 50%; background-size: 10px 10px; background-repeat: no-repeat; position: relative; top: 5px; margin-left: 5px; }
+			#sorttable_sortrevind { width: 10px; height: 10px; display: inline-block; text-indent: -1000em; background-image: url(/assets/images/up.svg); background-position: 50% 50%; background-size: 10px 10px; background-repeat: no-repeat; position: relative; top: 5px; margin-left: 5px; }
 		</style>
 	</head>
 	<body>

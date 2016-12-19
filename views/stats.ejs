@@ -4,20 +4,20 @@
 <p>All stats are year to date</p>
 
 <div class="table-wrapper">
-  <table>
+  <table class="sortable">
     <thead>
       <tr>
         <th>Rank</th>
-        <th>Club members</th>
+        <th>Club member</th>
         <th>No of Rides</th>
         <th>Distance (miles)</th>
-        <th>Elevation (meters)</th>
+        <th>Elevation (feet)</th>
         <th>Hours</th>
         <th>Av Speed (mph)</th>
         <th>Av Distance (miles)</th>
-        <th>Av Elevation (meters)</th>
+        <th>Av Elevation (feet)</th>
         <th>Longest (miles)</th>
-        <th>Highest (meters)</th>
+        <th>Highest (feet)</th>
         <th>Difference</th>
         <th>% of Total</th>
       </tr>
@@ -42,9 +42,22 @@
           <td><%= members[i].longest %></td>
           <td><%= members[i].highest %></td>
           <td><%= (i == 0) ? 'N/A' : '-'+ Math.round(members[i-1].distance - members[i].distance) %></td>
-          <td><%= Math.round((members[i].distance * 100) / totalClubDistance) + '%' %></td>
+          <td><%= Math.round((members[i].distance * 100) / totals.distance) + '%' %></td>
         </tr>
       <% } %>
     </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2">TOTAL</td>
+        <td><%= totals.rides %></td>
+        <td><%= totals.distance %></td>
+        <td><%= totals.elevation %></td>
+        <td><%= totals.hours %></td>
+        <td><%= totals.avSpeed %></td>
+        <td><%= Math.round((totals.distance / totals.rides) * 100) / 100 %></td>
+        <td><%= Math.round((totals.elevation / totals.rides) * 100) / 100 %></td>
+        <td colspan="4"></td>
+      </tr>
+    </tfoot>
   </table>
 </div>
