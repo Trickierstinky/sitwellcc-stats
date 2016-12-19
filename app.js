@@ -50,11 +50,10 @@ passport.use(new StravaStrategy({
           };
 
           if (members.find(profileId)) {
-
             const db = new sqlite3.Database('sitwellccstats.db');
 
             db.serialize(function() {
-              db.run(`INSERT OR IGNORE INTO members VALUES ('${profile.token}');`);
+              db.run(`INSERT OR IGNORE INTO members(accessToken, userID) VALUES ('${profile.token}', '${profile.id}');`);
             });
 
             db.close();
@@ -96,7 +95,6 @@ const memberStats = (req, res, next) => {
   const memberStats = []
       , db = new sqlite3.Database('sitwellccstats.db');
 
-
   db.all('SELECT accessToken FROM members', (err, rows) => {
     fetchData(rows, (memberStats) =>{
       db.close(() => {
@@ -113,11 +111,15 @@ app.get('/stats', ensureAuthenticated, (req, res) => {
   var totalClubDistance = req.memberStats.sum('distance');
 
   var filteredStats = req.memberStats.sort(dynamicSort('distance'));
+
+ logPositions(filteredStats, (filteredStats) =>{
+  //console.log(filteredStats);
   res.render('stats', {
     user: req.user,
     members: filteredStats,
     totalClubDistance: totalClubDistance
   });
+ });
 });
 
 app.get('/auth/strava', passport.authenticate('strava', { scope: ['public'] }), (req, res) => {
@@ -175,7 +177,9 @@ function httpGet(token, callback){
         'hours': Math.round((memberStats.ytd_ride_totals.moving_time * 0.00027778) * 100) / 100, // hr = s * 0.00027778 from http://www.metric-conversions.org/time/seconds-to-hour.htm
         'avSpeed': Math.round(((memberStats.ytd_ride_totals.distance * 0.00062137) / (memberStats.ytd_ride_totals.moving_time * 0.00027778)) * 100) /100,
         'longest': Math.round(memberStats.biggest_ride_distance * 0.00062137),
-        'highest': Math.round(memberStats.biggest_climb_elevation_gain  * 3.2808)
+        'highest': Math.round(memberStats.biggest_climb_elevation_gain  * 3.2808),
+        'currentPosition' : 0,
+        'lastPosition' : 0
       });
     });
   });
@@ -219,4 +223,31 @@ Array.prototype.sum = function (prop) {
         total += this[i][prop]
     }
     return total
+}
+
+
+// Matt added 19th
+
+function logPositions(items, callback) {
+  const db = new sqlite3.Database('sitwellccstats.db');
+  console.log(items);
+  for ( var i = 0, _len = items.length; i < _len; i++ ) {
+    if ( i+1 !=  items[i].currentPosition){
+      db.run(`UPDATE members SET currentPosition = ${i+1}, lastPosition = (SELECT currentPosition FROM members where userID = '${items[i].id}') where userID = '${items[i].id}';`);
+    }
+
+    db.get(`SELECT * FROM members where userID = '${items[i].id}';`, (err, row) => {
+      if(typeof row != undefined){
+        console.log(items[i]);
+        console.log(row, row.currentPosition,row.lastPosition);
+        items[i].currentPosition = row.currentPosition;
+        items[i].lastPosition = row.lastPosition;
+        console.log('finished');
+      }
+    });
+  }
+
+  db.close();
+
+  callback(items);
 }
