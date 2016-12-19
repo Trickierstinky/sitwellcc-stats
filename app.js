@@ -228,26 +228,26 @@ Array.prototype.sum = function (prop) {
 
 // Matt added 19th
 
-function logPositions(items, callback) {
+function logPositions(member, callback) {
   const db = new sqlite3.Database('sitwellccstats.db');
-  console.log(items);
-  for ( var i = 0, _len = items.length; i < _len; i++ ) {
-    if ( i+1 !=  items[i].currentPosition){
-      db.run(`UPDATE members SET currentPosition = ${i+1}, lastPosition = (SELECT currentPosition FROM members where userID = '${items[i].id}') where userID = '${items[i].id}';`);
+  //console.log(member);
+  for ( var i = 0, _len = member.length; i < _len; i++ ) {
+    if ( i+1 !=  member[i].currentPosition){
+      db.run(`UPDATE members SET currentPosition = ${i+1}, lastPosition = (SELECT currentPosition FROM members where userID = '${member[i].id}') where userID = '${member[i].id}';`);
     }
 
-    db.get(`SELECT * FROM members where userID = '${items[i].id}';`, (err, row) => {
+    db.get(`SELECT * FROM members where userID = '${member[i].id}';`, (err, row) => {
       if(typeof row != undefined){
-        console.log(items[i]);
-        console.log(row, row.currentPosition,row.lastPosition);
-        items[i].currentPosition = row.currentPosition;
-        items[i].lastPosition = row.lastPosition;
-        console.log('finished');
+        //console.log(member[i]);
+        //console.log(row, row.currentPosition,row.lastPosition);
+        member[i].currentPosition = row.currentPosition;
+        member[i].lastPosition = row.lastPosition;
+        //console.log('finished');
       }
     });
   }
 
   db.close();
 
-  callback(items);
+  callback(member);
 }
