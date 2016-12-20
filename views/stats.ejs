@@ -7,8 +7,8 @@
   <table class="sortable">
     <thead>
       <tr>
-        <th>Rank</th>
-        <th>Club member</th>
+        <th>Rank(Last)</th>
+        <th>Club Member</th>
         <th>No of Rides</th>
         <th>Distance (miles)</th>
         <th>Elevation (feet)</th>
@@ -25,7 +25,7 @@
     <tbody>
       <% for(var i = 0; i < members.length; i++) { %>
         <tr>
-          <th><%= i + 1 %></th>
+          <th><%= i + 1 %>(<%= members[i].lastPosition + 1 %>)</th>
           <td>
             <a href="https://www.strava.com/athletes/<%= members[i].id %>" target="_blank">
               <img src="<%= members[i].photo %>">

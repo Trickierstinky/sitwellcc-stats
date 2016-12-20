@@ -50,11 +50,10 @@ passport.use(new StravaStrategy({
           };
 
           if (members.find(profileId)) {
-
             const db = new sqlite3.Database('sitwellccstats.db');
 
             db.serialize(function() {
-              db.run(`INSERT OR IGNORE INTO members VALUES ('${profile.token}');`);
+              db.run(`INSERT OR IGNORE INTO members(accessToken, userID) VALUES ('${profile.token}', '${profile.id}');`);
             });
 
             db.close();
@@ -96,7 +95,6 @@ const memberStats = (req, res, next) => {
   const memberStats = []
       , db = new sqlite3.Database('sitwellccstats.db');
 
-
   db.all('SELECT accessToken FROM members', (err, rows) => {
     fetchData(rows, (memberStats) =>{
       db.close(() => {
@@ -119,11 +117,15 @@ app.get('/stats', ensureAuthenticated, (req, res) => {
   };
 
   var filteredStats = req.memberStats.sort(dynamicSort('distance'));
+
+ logPositions(filteredStats, (filteredStats) =>{
+  //console.log(filteredStats);
   res.render('stats', {
     user: req.user,
     members: filteredStats,
     totals: clubTotals
   });
+ });
 });
 
 app.get('/auth/strava', passport.authenticate('strava', { scope: ['public'] }), (req, res) => {
@@ -169,20 +171,28 @@ function httpGet(token, callback){
     };
 
     request(athleteStatOptions, (err, response, data) => {
+      const db = new sqlite3.Database('sitwellccstats.db');
+
       const memberStats = JSON.parse(response.body);
 
-      callback(err, {
-        'photo': member.profile,
-        'id': member.id,
-        'name': `${member.firstname}`,
-        'rides': memberStats.ytd_ride_totals.count,
-        'distance': Math.round((memberStats.ytd_ride_totals.distance * 0.00062137) * 100) / 100, // mi = m * 0.00062137 from http://www.metric-conversions.org/length/meters-to-miles.htm
-        'elevation': Math.round((memberStats.ytd_ride_totals.elevation_gain * 3.2808) * 100) / 100, // ft = m * 3.2808 from http://www.metric-conversions.org/length/meters-to-feet.htm
-        'hours': Math.round((memberStats.ytd_ride_totals.moving_time * 0.00027778) * 100) / 100, // hr = s * 0.00027778 from http://www.metric-conversions.org/time/seconds-to-hour.htm
-        'avSpeed': Math.round(((memberStats.ytd_ride_totals.distance * 0.00062137) / (memberStats.ytd_ride_totals.moving_time * 0.00027778)) * 100) /100,
-        'longest': Math.round(memberStats.biggest_ride_distance * 0.00062137),
-        'highest': Math.round(memberStats.biggest_climb_elevation_gain  * 3.2808)
-      });
+
+      db.get(`SELECT * from members where userID = '${member.id}'`, (err, row) => {
+
+        callback(err, {
+          'photo': member.profile,
+          'id': member.id,
+          'name': `${member.firstname}`,
+          'rides': memberStats.ytd_ride_totals.count,
+          'distance': Math.round((memberStats.ytd_ride_totals.distance * 0.00062137) * 100) / 100, // mi = m * 0.00062137 from http://www.metric-conversions.org/length/meters-to-miles.htm
+          'elevation': Math.round((memberStats.ytd_ride_totals.elevation_gain * 3.2808) * 100) / 100, // ft = m * 3.2808 from http://www.metric-conversions.org/length/meters-to-feet.htm
+          'hours': Math.round((memberStats.ytd_ride_totals.moving_time * 0.00027778) * 100) / 100, // hr = s * 0.00027778 from http://www.metric-conversions.org/time/seconds-to-hour.htm
+          'avSpeed': Math.round(((memberStats.ytd_ride_totals.distance * 0.00062137) / (memberStats.ytd_ride_totals.moving_time * 0.00027778)) * 100) /100,
+          'longest': Math.round(memberStats.biggest_ride_distance * 0.00062137),
+          'highest': Math.round(memberStats.biggest_climb_elevation_gain  * 3.2808),
+          'currentPosition' : row.currentPosition,
+          'lastPosition' : row.lastPosition
+        });
+      })
     });
   });
 }
@@ -226,3 +236,21 @@ Array.prototype.sum = function (prop) {
     }
     return total
 }
+
+
+// Matt added 19th
+
+function logPositions(member, callback) {
+  const db = new sqlite3.Database('sitwellccstats.db');
+  //console.log(member);
+  var stmt = db.prepare("UPDATE members SET currentPosition = $index, lastPosition = (SELECT currentPosition FROM members WHERE userID = $id ) WHERE userID = $id;");
+  for ( var i = 0, _len = member.length; i < _len; i++ ) {
+    if ( i+1 !=  member[i].currentPosition || (member[i].lastPosition == 0 || member[i].currentPosition == 0 )){
+      stmt.run({$index: i,
+                $id: member[i].id.toString()});
+    }
+  }
+
+  stmt.finalize(callback(member));
+}
+
