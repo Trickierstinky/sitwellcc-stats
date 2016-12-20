@@ -25,7 +25,7 @@
     <tbody>
       <% for(var i = 0; i < members.length; i++) { %>
         <tr>
-          <th><%= i + 1 %>(<%= members[i].lastPosition %>)</th>
+          <th><%= i + 1 %>(<%= members[i].lastPosition + 1 %>)</th>
           <td>
             <a href="https://www.strava.com/athletes/<%= members[i].id %>" target="_blank">
               <img src="<%= members[i].photo %>">

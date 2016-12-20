@@ -8,8 +8,8 @@ db.serialize(function() {
 
 db.serialize(function() {
   db.run("ALTER TABLE members ADD userID TEXT;");
-  db.run("ALTER TABLE members ADD lastPosition INTEGER;");
-  db.run("ALTER TABLE members ADD currentPosition INTEGER;");
+  db.run("ALTER TABLE members ADD lastPosition INTEGER DEFAULT 0;");
+  db.run("ALTER TABLE members ADD currentPosition INTEGER DEFAULT 0;");
 })
 
 db.close();
