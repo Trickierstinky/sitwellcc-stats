@@ -108,7 +108,13 @@ const memberStats = (req, res, next) => {
 
 app.get('/stats', ensureAuthenticated, memberStats);
 app.get('/stats', ensureAuthenticated, (req, res) => {
-  var totalClubDistance = req.memberStats.sum('distance');
+  var clubTotals = {
+    'rides': req.memberStats.sum('rides'),
+    'distance': req.memberStats.sum('distance'),
+    'elevation': req.memberStats.sum('elevation'),
+    'hours': req.memberStats.sum('hours'),
+    'avSpeed': Math.round((req.memberStats.sum('distance') / req.memberStats.sum('hours')) * 100) /100
+  };
 
   var filteredStats = req.memberStats.sort(dynamicSort('distance'));
 
@@ -117,7 +123,7 @@ app.get('/stats', ensureAuthenticated, (req, res) => {
   res.render('stats', {
     user: req.user,
     members: filteredStats,
-    totalClubDistance: totalClubDistance
+    totals: clubTotals
   });
  });
 });
