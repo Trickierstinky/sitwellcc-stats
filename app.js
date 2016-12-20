@@ -119,7 +119,6 @@ app.get('/stats', ensureAuthenticated, (req, res) => {
   var filteredStats = req.memberStats.sort(dynamicSort('distance'));
 
  logPositions(filteredStats, (filteredStats) =>{
-  //console.log(filteredStats);
   res.render('stats', {
     user: req.user,
     members: filteredStats,
@@ -226,9 +225,6 @@ var dynamicSort = (property) => {
   };
 };
 
-
-// Matt added 15th
-
 Array.prototype.sum = function (prop) {
     var total = 0
     for ( var i = 0, _len = this.length; i < _len; i++ ) {
@@ -237,15 +233,11 @@ Array.prototype.sum = function (prop) {
     return total
 }
 
-
-// Matt added 19th
-
 function logPositions(member, callback) {
   const db = new sqlite3.Database('sitwellccstats.db');
-  //console.log(member);
   var stmt = db.prepare("UPDATE members SET currentPosition = $index, lastPosition = (SELECT currentPosition FROM members WHERE userID = $id ) WHERE userID = $id;");
   for ( var i = 0, _len = member.length; i < _len; i++ ) {
-    if ( i+1 !=  member[i].currentPosition || (member[i].lastPosition == 0 || member[i].currentPosition == 0 )){
+    if ( i !=  member[i].currentPosition ){
       stmt.run({$index: i,
                 $id: member[i].id.toString()});
     }
