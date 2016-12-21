@@ -177,6 +177,8 @@ function httpGet(token, callback){
 
       db.get(`SELECT * from members where userID = '${member.id}'`, (err, row) => {
 
+        console.log(memberStats);
+
         callback(err, {
           'photo': member.profile,
           'id': member.id,
@@ -186,8 +188,8 @@ function httpGet(token, callback){
           'elevation': Math.round((memberStats.ytd_ride_totals.elevation_gain * 3.2808) * 100) / 100, // ft = m * 3.2808 from http://www.metric-conversions.org/length/meters-to-feet.htm
           'hours': Math.round((memberStats.ytd_ride_totals.moving_time * 0.00027778) * 100) / 100, // hr = s * 0.00027778 from http://www.metric-conversions.org/time/seconds-to-hour.htm
           'avSpeed': Math.round(((memberStats.ytd_ride_totals.distance * 0.00062137) / (memberStats.ytd_ride_totals.moving_time * 0.00027778)) * 100) /100,
-          'longest': Math.round(memberStats.biggest_ride_distance * 0.00062137),
-          'highest': Math.round(memberStats.biggest_climb_elevation_gain  * 3.2808),
+          'longest': Math.round((memberStats.biggest_ride_distance * 0.00062137) * 100) / 100,
+          'highest': Math.round((memberStats.biggest_climb_elevation_gain  * 3.2808) * 100) / 100,
           'currentPosition' : row.currentPosition,
           'lastPosition' : row.lastPosition
         });
