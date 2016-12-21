@@ -25,7 +25,7 @@
     <tbody>
       <% for(var i = 0; i < members.length; i++) { %>
         <tr>
-          <th>
+          <th sorttable_customkey="<%= i + 1 %>">
             <%= i + 1 %> <span><%= members[i].lastPosition != -1 ? '('+ (members[i].lastPosition + 1) +')' : '' %></span>
             <% if (members[i].lastPosition == -1) { %>
               +
