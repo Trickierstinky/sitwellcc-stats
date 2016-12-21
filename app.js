@@ -176,9 +176,6 @@ function httpGet(token, callback){
 
 
       db.get(`SELECT * from members where userID = '${member.id}'`, (err, row) => {
-
-        console.log(memberStats);
-
         callback(err, {
           'photo': member.profile,
           'id': member.id,
