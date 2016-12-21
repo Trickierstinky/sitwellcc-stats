@@ -111,7 +111,7 @@ app.get('/stats', ensureAuthenticated, (req, res) => {
   var clubTotals = {
     'rides': req.memberStats.sum('rides'),
     'distance': req.memberStats.sum('distance'),
-    'elevation': req.memberStats.sum('elevation'),
+    'elevation': Math.round(req.memberStats.sum('elevation') * 100) /100,
     'hours': req.memberStats.sum('hours'),
     'avSpeed': Math.round((req.memberStats.sum('distance') / req.memberStats.sum('hours')) * 100) /100
   };
